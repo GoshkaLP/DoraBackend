@@ -1,9 +1,9 @@
 from ..models import db, WarrantiesCategories, UsersWarranties, WarrantiesCases, WarrantiesFiles
 
-from .main_ext import resp_ok, resp_account_not_verified, resp_wrong_token, resp_no_file, resp_no_warranty,\
+from .responses_controller import resp_ok, resp_account_not_verified, resp_wrong_token, resp_no_file, resp_no_warranty,\
     resp_form_not_valid, resp_no_warranties, resp_unable_to_delete_file, resp_unable_to_save_file
 
-from .protection_ext import auth, is_user_id_correct, is_user_verified, is_form_valid
+from .users_controller import auth, is_user_id_correct, is_user_verified, is_form_valid
 
 from .vars import DOMAIN
 

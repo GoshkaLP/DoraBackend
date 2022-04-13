@@ -1,27 +1,26 @@
-from .vars import JWT_SECRET, PASSWORD_SALT
-
 from flask_httpauth import HTTPTokenAuth
 
 from flask_mail import Mail
 
-from .main_ext import resp_ok, resp_wrong_code, resp_wrong_token, resp_account_exists, resp_account_not_exists, \
+from app.controllers.responses_controller import resp_ok, resp_wrong_code, resp_wrong_token, resp_account_exists, resp_account_not_exists, \
     resp_account_verified, resp_code_expires, resp_old_password, resp_wrong_password, resp_form_not_valid, \
     resp_account_not_verified, resp_wrong_email_format, resp_freq_password_change
 
-from ..models import Users, UsersCodes, UsersTokensSalt
+from app.models import Users, UsersCodes, UsersTokensSalt
 
 from jwt import decode, encode
 from jwt.exceptions import InvalidTokenError
 
 from hashlib import md5
 
-from Crypto.Random import random
+import random
+
+from app.controllers.secrets import JWT_SECRET, PASSWORD_SALT
 
 from string import ascii_letters, digits
 
-from email.utils import parseaddr
 
-from dns.resolver import resolve as dns_resolve
+import re
 
 from datetime import datetime
 
@@ -98,13 +97,9 @@ def check_password(email, password):
 
 # Проверка email на валидность
 def check_email(email):
-    if '@' not in parseaddr(email)[1]:
-        return False
-    try:
-        dns_resolve(email.rsplit('@', 1)[-1], 'MX')
+    if re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
         return True
-    except Exception:
-        return False
+    return False
 
 
 # Генерация кода для верификации или сброса пароля
@@ -316,9 +311,6 @@ def api_users_auth_email(form):
         'token': generate_token(user_obj.id, email),
         'verified': user_obj.verified
     })
-
-
-# todo регистрация/авторизация через соцсети
 
 
 # Метод выхода из аккаунта

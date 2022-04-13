@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+
+  d_app:
+    build: .
+    container_name: doraapp
+    restart: unless-stopped
+    expose:
+      - 8080
+    volumes:
+      - ./d_app_data:/usr/src/d_app/data
+      - /var/log:/var/log
+    links:
+      - ddb
+
+  ddb:
+    image: postgres:12.3-alpine
+    container_name: doradb
+    restart: unless-stopped
+    volumes:
+      - ./ddb_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5434:5432"
