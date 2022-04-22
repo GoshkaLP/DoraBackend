@@ -1,8 +1,12 @@
-from os import getenv
+from os import getenv, name
 
 # Для отладки
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
+
+port = 5434
+if name == 'posix':
+    port = 5432
 
 
 class Config:
@@ -12,9 +16,10 @@ class Config:
         user=getenv('POSTGRES_USER'),
         password=getenv('POSTGRES_PASSWORD'),
         host=getenv('HOST'),
-        port=5434,
+        port=port,
         db=getenv('POSTGRES_DB')
     )
+    print(SQLALCHEMY_DATABASE_URI)
     # Не нужно проверять CSRF токен, так как не веб страница
     WTF_CSRF_ENABLED = False
     # Настройки Flask-Mail

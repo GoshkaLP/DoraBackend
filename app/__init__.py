@@ -20,7 +20,7 @@ def create_app(app_config=None):
     app.config.from_object(app_config)
 
     db.init_app(app)
-    mail.init_app(app)
+    # mail.init_app(app)
     # scheduler.init_app(app)
 
     app.register_blueprint(node)

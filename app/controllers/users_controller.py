@@ -269,7 +269,7 @@ def api_users_register_email(form):
         return resp_account_exists()
     hashed_password = hash_password(form.password.data)
     user_obj = Users.insert(email=email, password=hashed_password)
-    send_verification_mail(email)
+    # send_verification_mail(email)
     user_id = user_obj.id
     return resp_ok({
         'id': user_id,

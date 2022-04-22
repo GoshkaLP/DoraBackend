@@ -2,17 +2,20 @@ version: "3.8"
 
 services:
 
-  d_app:
+  doraapp:
     build: .
     container_name: doraapp
     restart: unless-stopped
     expose:
-      - 8080
+      - 8086
     volumes:
-      - ./d_app_data:/usr/src/d_app/data
       - /var/log:/var/log
     links:
       - ddb
+    env_file:
+      - server.env
+    networks:
+      - doraproject
 
   ddb:
     image: postgres:12.3-alpine
@@ -26,3 +29,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - "5434:5432"
+    networks:
+      - doraproject
+
+networks:
+  doraproject:

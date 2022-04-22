@@ -12,4 +12,5 @@ dnspython==2.2.1
 python-dateutil==2.8.2
 Pillow==9.1.0
 requests==2.27.1
+psycopg2==2.9.3
 uWSGI==2.0.18
