@@ -1,259 +1,256 @@
-# from ..models import db, WarrantiesCategories, UsersWarranties, WarrantiesCases, WarrantiesFiles
-#
-# from .responses_controller import resp_ok, resp_account_not_verified, resp_wrong_token, resp_no_file, resp_no_warranty,\
-#     resp_form_not_valid, resp_no_warranties, resp_unable_to_delete_file, resp_unable_to_save_file
-#
-# from .users_controller import auth, is_user_id_correct, is_user_verified, is_form_valid
-#
-# from .vars import DOMAIN
-#
-# from ..forms import DefaultFormValue
-#
-# from flask import send_file
-#
-# from os import path, getcwd, makedirs
-#
-# from dateutil.relativedelta import relativedelta
-#
-# from datetime import datetime
-#
-# from PIL import Image
-#
-#
-# def get_new_file_size(sz):
-#     x, y = sz
-#     coefficient = 1
-#     if max(x, y) > 2048:
-#         coefficient = round(max(x, y) / 2048)
-#     return round(x / coefficient), round(y / coefficient)
-#
-#
-# def save_file(counter, warranty_id, user_path, file):
-#     file_name = '{}_{}.jpg'.format(warranty_id, counter)
-#     try:
-#         save_path = path.join(user_path, file_name)
-#         img = Image.open(file)
-#         img = img.resize(get_new_file_size(img.size), Image.LANCZOS)
-#         img.save(save_path, quality=90, optimize=True)
-#         WarrantiesFiles.insert(path_to_file=file_name, warranty_id=warranty_id)
-#         return True
-#     except Exception:
-#         return False
-#
-#
-# def delete_file(file_obj):
-#     if not file_obj:
-#         return False
-#     file_obj.delete()
-#     return True
-#
-#
-# def get_date_and_days_end_warranty(type_warranty_period, warranty_period, date_of_purchase):
-#     add_value = relativedelta()
-#     if type_warranty_period == 'D':
-#         add_value.__init__(days=warranty_period)
-#     elif type_warranty_period == 'M':
-#         add_value.__init__(months=warranty_period)
-#     elif type_warranty_period == 'Y':
-#         add_value.__init__(years=warranty_period)
-#     date_end_warranty = date_of_purchase + add_value
-#     days_end_warranty = (datetime.now() - date_end_warranty).days * (-1)
-#     if days_end_warranty < 0:
-#         days_end_warranty = 0
-#     return date_end_warranty, days_end_warranty
-#
-#
-# def get_warranty_full_info(warranty_obj, cases_obj, files_obj):
-#     date_end_warranty, days_end_warranty = get_date_and_days_end_warranty(warranty_obj.type_warranty_period,
-#                                                                           warranty_obj.warranty_period,
-#                                                                           warranty_obj.date_of_purchase)
-#     info = {
-#         'id': warranty_obj.id,
-#         'name': warranty_obj.name,
-#         'shop_name': warranty_obj.shop_name,
-#         'category_id': warranty_obj.category_id,
-#         'date_of_purchase': warranty_obj.date_of_purchase,
-#         'date_end_warranty': date_end_warranty,
-#         'days_end_warranty': days_end_warranty,
-#         'files': [],
-#         'expertise': cases_obj.expertise,
-#         'date_end_expertise': cases_obj.date_end_expertise,
-#         'money_returned': cases_obj.money_returned,
-#         'item_replaced': cases_obj.item_replaced
-#     }
-#     for file in files_obj:
-#         info['files'].append({
-#             'file_id': file.id,
-#             'file_url': '{}/api/users/{}/file/{}'.format(DOMAIN, warranty_obj.user_id, file.id)
-#         })
-#     return info
-#
-#
-# # Метод выгрузки всех доступных категорий
-# def api_warranties_categories():
-#     if not is_user_verified(auth.current_user()['id']):
-#         return resp_account_not_verified()
-#     categories = WarrantiesCategories.query.all()
-#     resp = []
-#     for category in categories:
-#         resp.append({
-#             'category_id': category.id,
-#             'category_name': category.name,
-#             'type_warranty_period': category.type_warranty_period,
-#             'warranty_period': category.warranty_period
-#         })
-#     return resp_ok(resp)
-#
-#
-# # Метод добавление талона в базу
-# def api_users_warranties_post(form):
-#     if not is_form_valid(form):
-#         return resp_form_not_valid()
-#     user_id = form.user_id.data
-#     email = auth.current_user()['email']
-#     if not is_user_id_correct(user_id, auth.current_user()['id']):
-#         return resp_wrong_token()
-#     if not is_user_verified(user_id):
-#         return resp_account_not_verified()
-#     name = form.name.data
-#     shop_name = form.shop_name.data
-#     category_id = form.category_id.data
-#     date_of_purchase = datetime.combine(form.date_of_purchase.data, datetime.min.time())
-#     type_warranty_period = form.type_warranty_period.data
-#     warranty_period = form.warranty_period.data
-#     files = form.files.data
-#     user_path = path.join(getcwd(), 'data', email)
-#     archived = False
-#     _, days_end_warranty = get_date_and_days_end_warranty(type_warranty_period, warranty_period, date_of_purchase)
-#     if days_end_warranty == 0:
-#         archived = True
-#     if not path.exists(user_path):
-#         makedirs(user_path)
-#     warranty = UsersWarranties.insert(user_id=user_id, name=name, shop_name=shop_name,
-#                                       category_id=category_id, date_of_purchase=date_of_purchase,
-#                                       type_warranty_period=type_warranty_period, warranty_period=warranty_period,
-#                                       archived=archived)
-#     WarrantiesCases.insert(warranty_id=warranty.id)
-#     for counter, file in enumerate(files, 1):
-#         if not save_file(counter, warranty.id, user_path, file):
-#             for file_obj in WarrantiesFiles.filter_by(warranty_id=warranty.id).all():
-#                 delete_file(file_obj)
-#             warranty.delete()
-#             return resp_unable_to_save_file()
-#     return resp_ok({'warranty_id': warranty.id})
-#
-#
-# # Метод выгрузки всех талонов на пользователя
-# def api_users_warranties_get(user_id):
-#     if not is_user_id_correct(user_id, auth.current_user()['id']):
-#         return resp_wrong_token()
-#     if not is_user_verified(user_id):
-#         return resp_account_not_verified()
-#     warranties = UsersWarranties.query.filter_by(user_id=user_id, deleted=False).all()
-#     if not warranties:
-#         return resp_no_warranties()
-#     archived = []
-#     non_archived = []
-#     for warranty in warranties:
-#         files = WarrantiesFiles.query.filter_by(warranty_id=warranty.id, deleted=False).all()
-#         cases = WarrantiesCases.query.filter_by(warranty_id=warranty.id).first()
-#         warranty_info = get_warranty_full_info(warranty, cases, files)
-#         if not warranty.archived:
-#             non_archived.append(warranty_info)
-#         else:
-#             archived.append(warranty_info)
-#     resp = {'non_archived': non_archived, 'archived': archived}
-#     return resp_ok(resp)
-#
-#
-# # Метод удаления талона пользователя
-# def api_users_warranties_delete(form):
-#     if not is_form_valid(form):
-#         return resp_form_not_valid()
-#     user_id = form.user_id.data
-#     if not is_user_id_correct(user_id, auth.current_user()['id']):
-#         return resp_wrong_token()
-#     if not is_user_verified(user_id):
-#         return resp_account_not_verified()
-#     warranty_id = form.warranty_id.data
-#     warranty = UsersWarranties.query.filter_by(id=warranty_id, deleted=False, user_id=user_id).first()
-#     if not warranty:
-#         return resp_no_warranty()
-#     files = WarrantiesFiles.query.filter_by(warranty_id=warranty_id, deleted=False).all()
-#     for file in files:
-#         if not delete_file(file):
-#             return resp_unable_to_delete_file()
-#     warranty.delete()
-#     WarrantiesCases.query.filter_by(warranty_id=warranty_id).first().delete()
-#     return resp_ok()
-#
-#
-# # Метод изменения талона пользователя
-# def api_users_warranties_patch(form):
-#     if not is_form_valid(form):
-#         return resp_form_not_valid()
-#     user_id = form.user_id.data
-#     if not is_user_id_correct(user_id, auth.current_user()['id']):
-#         return resp_wrong_token()
-#     if not is_user_verified(user_id):
-#         return resp_account_not_verified()
-#     warranty_id = form.warranty_id.data
-#     warranty_main = UsersWarranties.query.filter_by(id=warranty_id, deleted=False, user_id=user_id).first()
-#     if not warranty_main:
-#         return resp_no_warranty()
-#     warranty_cases = WarrantiesCases.query.filter_by(warranty_id=warranty_id).first()
-#     user_path = path.join(getcwd(), 'data', auth.current_user()['email'])
-#     main_upd = {}
-#     cases_upd = {}
-#     warranty_main_params = {'name', 'shop_name', 'category_id', 'date_of_purchase',
-#                             'type_warranty_period', 'warranty_period', 'archived'}
-#     warranty_cases_params = {'expertise', 'date_end_expertise', 'money_returned', 'item_replaced'}
-#     for key, value in form.data.items():
-#         if key == 'files_delete' and value:
-#             for file_id in value:
-#                 file_obj = WarrantiesFiles.query.filter_by(id=file_id, deleted=False).first()
-#                 if not delete_file(file_obj):
-#                     return resp_unable_to_delete_file()
-#         elif key == 'files_add' and value:
-#             filename_counter = 1
-#             last_file_obj = WarrantiesFiles.query.filter_by(warranty_id=warranty_id).\
-#                 order_by(WarrantiesFiles.id.desc()).first()
-#             last_file_path = getattr(last_file_obj, 'path_to_file', None)
-#             if last_file_path:
-#                 filename_counter = int(last_file_path[last_file_path.index('_')+1:last_file_path.index('.')]) + 1
-#             for counter, file in enumerate(value, filename_counter):
-#                 if not save_file(counter, warranty_id, user_path, file):
-#                     return resp_unable_to_save_file()
-#         elif key in warranty_main_params and not isinstance(value, DefaultFormValue):
-#             main_upd.update({key: value})
-#         elif key in warranty_cases_params and not isinstance(value, DefaultFormValue):
-#             cases_upd.update({key: value})
-#     if main_upd:
-#         warranty_main.update(**main_upd)
-#     if cases_upd:
-#         if cases_upd.get('money_returned', False):
-#             warranty_main.update(archived=True)
-#         if cases_upd.get('item_replaced', False):
-#             warranty_main.update(archived=True)
-#         warranty_cases.update(**cases_upd)
-#     warranty_files = WarrantiesFiles.query.filter_by(warranty_id=warranty_id, deleted=False).all()
-#     resp = get_warranty_full_info(warranty_main, warranty_cases, warranty_files)
-#     return resp_ok(resp)
-#
-#
-# # Метод отправки фото с сервера
-# def api_users_file(user_id, file_id):
-#     if not is_user_id_correct(user_id, auth.current_user()['id']):
-#         return resp_wrong_token()
-#     if not is_user_verified(user_id):
-#         return resp_account_not_verified()
-#     file_obj = db.session.query(WarrantiesFiles.id, WarrantiesFiles.path_to_file,
-#                                 UsersWarranties.user_id, WarrantiesFiles.deleted).\
-#         join(UsersWarranties, UsersWarranties.id == WarrantiesFiles.warranty_id).\
-#         filter(WarrantiesFiles.id == file_id, WarrantiesFiles.deleted == False).first()
-#     if not file_obj:
-#         return resp_no_file()
-#     full_path = path.join(getcwd(), 'data', auth.current_user()['email'], file_obj.path_to_file)
-#     if not path.exists(full_path):
-#         return resp_no_file()
-#     return send_file(full_path)
+from app.controllers.responses_controller import resp_ok, resp_form_not_valid, \
+    resp_manufacturer_exists, resp_manufacturer_not_exists, resp_product_type_exists, \
+    resp_model_exists, resp_model_not_exists, resp_unit_exists, resp_file_not_exists, \
+    resp_wrong_qr_code, resp_unit_assigned
+
+from app.controllers.auth_controller import auth
+
+from app.controllers.qr_controller import generate_qr, decode_qr
+
+from app.forms import is_form_valid
+
+from app.models import Manufacturers, ProductTypes, ProductModel, \
+    ProductUnit, UsersManufacturers, CustomersProductUnit
+
+from string import ascii_letters, digits
+
+from flask import send_file
+
+import random
+
+from io import BytesIO
+
+from app.controllers.secrets import BASE_URL
+
+
+def get_user_id():
+    user_id = auth.current_user()['id']
+    return user_id
+
+
+def get_manufacturer_id():
+    user_id = get_user_id()
+    user = UsersManufacturers.query.filter_by(user_id=user_id).first()
+    return user.manufacturer_id
+
+
+def create_manufacturer(form):
+    if not is_form_valid(form):
+        return resp_form_not_valid()
+    manufacturer_name = form.name.data
+    if Manufacturers.query.filter_by(name=manufacturer_name).first():
+        return resp_manufacturer_exists()
+    manufacturer = Manufacturers.insert(name=manufacturer_name)
+    resp = {
+        'id': manufacturer.id
+    }
+    return resp_ok(resp)
+
+
+def create_product_type(form):
+    if not is_form_valid(form):
+        return resp_form_not_valid()
+    manufacturer_id = get_manufacturer_id()
+    type_name = form.name.data
+    if not Manufacturers.query.filter_by(id=manufacturer_id).first():
+        return resp_manufacturer_not_exists()
+    if ProductTypes.query.filter_by(name=type_name, manufacturer_id=manufacturer_id).first():
+        return resp_product_type_exists()
+    product_type = ProductTypes.insert(manufacturer_id=manufacturer_id, name=type_name)
+    resp = {
+        'id': product_type.id
+    }
+    return resp_ok(resp)
+
+
+def create_model(form):
+    if not is_form_valid(form):
+        return resp_form_not_valid()
+    manufacturer_id = get_manufacturer_id()
+    model_name = form.model_name.data
+    type_id = form.product_type_id.data
+    photo = form.photo.data
+    if ProductModel.query.filter_by(name=model_name, manufacturer_id=manufacturer_id).first():
+        return resp_model_exists()
+    model = ProductModel.insert(
+        manufacturer_id=manufacturer_id,
+        name=model_name,
+        product_type_id=type_id,
+        photo=photo.read()
+    )
+    resp = {
+        'id': model.id
+    }
+    return resp_ok(resp)
+
+
+def generate_unit_salt():
+    pattern = '{}{}'.format(ascii_letters, digits)
+    salt = ''.join([random.choice(pattern) for _ in range(10)])
+    return salt
+
+
+def create_unit(form):
+    if not is_form_valid(form):
+        return resp_form_not_valid()
+    model_id = form.model_id.data
+    serial_number = form.serial_number.data
+    if ProductUnit.query.filter_by(serial_number=serial_number).first():
+        return resp_unit_exists()
+    model = ProductModel.query.filter_by(id=model_id).first()
+    if not model:
+        return resp_model_not_exists()
+    units = getattr(model, 'units', [])
+    units.append(ProductUnit(
+        model_id=model_id,
+        serial_number=serial_number,
+        salt=generate_unit_salt()
+    ))
+    model.update(units=units)
+    return resp_ok()
+
+
+def get_manufacturers():
+    data = Manufacturers.query.all()
+    resp = []
+    for el in data:
+        resp.append({
+            'id': el.id,
+            'name': el.name
+        })
+    return resp_ok(resp)
+
+
+def get_models():
+    manufacturer_id = get_manufacturer_id()
+    data = ProductModel.query.filter_by(manufacturer_id=manufacturer_id).all()
+    resp = []
+    for model in data:
+        resp.append({
+            'id': model.id,
+            'name': model.name,
+            'type': model.product_type.name,
+            'photo': '{url}/api/products/models/photo/{id}'.format(
+                url=BASE_URL,
+                id=model.id
+            )
+        })
+    return resp_ok(resp)
+
+
+def get_units():
+    user_role = auth.current_user()['role']
+    resp = []
+    if user_role == 'manufacturer':
+        manufacturer_id = get_manufacturer_id()
+        data = ProductUnit.query. \
+            join(ProductModel).filter(ProductModel.manufacturer_id == manufacturer_id).all()
+        for unit in data:
+            resp.append({
+                'id': unit.id,
+                'manufacturer': unit.product_model.manufacturer.name,
+                'model': unit.product_model.name,
+                'serialNumber': unit.serial_number,
+                'assigned': unit.assigned,
+                'qrImage': '{url}/api/products/units/qr/{id}'.format(
+                    url=BASE_URL,
+                    id=unit.id
+                )
+            })
+    elif user_role == 'customer':
+        user_id = get_user_id()
+        data = ProductUnit.query.\
+            join(CustomersProductUnit).filter(CustomersProductUnit.user_id == user_id).all()
+        for unit in data:
+            resp.append({
+                'id': unit.id,
+                'manufacturer': unit.product_model.manufacturer.name,
+                'model': unit.product_model.name,
+                'serialNumber': unit.serial_number,
+                'photo': '{url}/api/products/units/photo/{id}'.format(
+                    url=BASE_URL,
+                    id=unit.id
+                )
+            })
+    return resp_ok(resp)
+
+
+def get_product_types():
+    resp = []
+    manufacturer_id = get_manufacturer_id()
+    data = ProductTypes.query.filter_by(manufacturer_id=manufacturer_id).all()
+    for pr_type in data:
+        resp.append({
+            'id': pr_type.id,
+            'name': pr_type.name
+        })
+    return resp_ok(resp)
+
+
+def send_qr_photo(unit_id):
+    manufacturer_id = get_manufacturer_id()
+    data = ProductUnit.query \
+        .join(ProductModel).filter(
+            ProductModel.manufacturer_id == manufacturer_id, ProductUnit.id == unit_id
+        ).first()
+    if data:
+        img = generate_qr(data.salt, data.id)
+        img_bytes = BytesIO()
+        img.save(img_bytes, format='JPEG')
+        img_bytes.seek(0)
+        return send_file(
+            img_bytes,
+            mimetype='image/jpeg',
+            as_attachment=True,
+            attachment_filename='photo.jpg'
+        )
+    return resp_file_not_exists()
+
+
+def send_product_photo(model_id=None, unit_id=None):
+    img = None
+    if model_id:
+        manufacturer_id = get_manufacturer_id()
+        data = ProductModel.query.filter_by(id=model_id,
+                                            manufacturer_id=manufacturer_id).first()
+        if not data:
+            return resp_file_not_exists()
+        img = data.photo
+    elif unit_id:
+        user_id = get_user_id()
+        data = ProductUnit.query. \
+            join(CustomersProductUnit).filter(
+                CustomersProductUnit.user_id == user_id, ProductUnit.id == unit_id
+            ).first()
+        if not data:
+            return resp_file_not_exists()
+        img = data.product_model.photo
+    else:
+        return resp_file_not_exists()
+
+    return send_file(
+        BytesIO(img),
+        mimetype='image/jpeg',
+        as_attachment=True,
+        attachment_filename='photo.jpg'
+    )
+
+
+def add_customer_unit(form):
+    user_id = get_user_id()
+    qr_data = form.qr.data
+    decoded_data = decode_qr(qr_data)
+    if not decoded_data:
+        return resp_wrong_qr_code()
+    unit_id = decoded_data['unit_id']
+    salt = decoded_data['salt']
+    unit = ProductUnit.query.filter_by(id=unit_id, salt=salt).first()
+    if not unit:
+        return resp_wrong_qr_code()
+    if unit.assigned:
+        return resp_unit_assigned()
+    if CustomersProductUnit.query.filter_by(user_id=user_id, unit_id=unit_id).first():
+        return resp_unit_assigned()
+    CustomersProductUnit.insert(user_id=user_id, unit_id=unit_id)
+    unit.update(assigned=True)
+    return resp_ok()

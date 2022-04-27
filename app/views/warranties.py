@@ -1,49 +1,89 @@
-# from flask import Blueprint
-#
-# from .extensions.protection_ext import auth
-#
-# from .forms import WarrantyPostForm, WarrantyPatchForm, WarrantyDeleteForm
-#
-# from .extensions.warranties_ext import api_warranties_categories, api_users_warranties_get,\
-#     api_users_file, api_users_warranties_post, api_users_warranties_delete, api_users_warranties_patch
-#
-# warranties = Blueprint('warranties', __name__)
-#
-#
-# @warranties.route('/api/warranties/categories', methods=['GET'])
-# @auth.login_required
-# def route_api_categories():
-#     return api_warranties_categories()
-#
-#
-# @warranties.route('/api/users/warranties', methods=['POST'])
-# @auth.login_required
-# def route_api_users_warranties_post():
-#     form = WarrantyPostForm()
-#     return api_users_warranties_post(form)
-#
-#
-# @warranties.route('/api/users/warranties', methods=['PATCH'])
-# @auth.login_required
-# def route_api_users_warranties_patch():
-#     form = WarrantyPatchForm()
-#     return api_users_warranties_patch(form)
-#
-#
-# @warranties.route('/api/users/<int:user_id>/file/<int:file_id>', methods=['GET'])
-# @auth.login_required
-# def route_api_users_file(user_id, file_id):
-#     return api_users_file(user_id, file_id)
-#
-#
-# @warranties.route('/api/users/<int:user_id>/warranties', methods=['GET'])
-# @auth.login_required
-# def route_api_users_warranties_get(user_id):
-#     return api_users_warranties_get(user_id)
-#
-#
-# @warranties.route('/api/users/warranties', methods=['DELETE'])
-# @auth.login_required
-# def route_api_users_warranties_delete():
-#     form = WarrantyDeleteForm()
-#     return api_users_warranties_delete(form)
+from flask import Blueprint
+
+from app.controllers.auth_controller import auth
+
+from app.forms import CreateManufacturer, CreateProductType, \
+    CreateModel, CreateUnit, AddCustomerUnit
+
+from app.controllers.warranties_controller import create_manufacturer, create_product_type, \
+    create_model, create_unit, get_manufacturers, get_models, get_units, \
+    get_product_types, send_product_photo, send_qr_photo, add_customer_unit
+
+warranties = Blueprint('warranties', __name__)
+
+
+@warranties.route('/api/manufacturers/create', methods=['POST'])
+@auth.login_required(role='manufacturer')
+def api_create_manufacturer():
+    form = CreateManufacturer()
+    return create_manufacturer(form)
+
+
+@warranties.route('/api/products/types/create', methods=['POST'])
+@auth.login_required(role='manufacturer')
+def api_create_product_type():
+    form = CreateProductType()
+    return create_product_type(form)
+
+
+@warranties.route('/api/products/models/create', methods=['POST'])
+@auth.login_required(role='manufacturer')
+def api_create_product_model():
+    form = CreateModel()
+    return create_model(form)
+
+
+@warranties.route('/api/products/units/create', methods=['POST'])
+@auth.login_required(role='manufacturer')
+def api_create_product_unit():
+    form = CreateUnit()
+    return create_unit(form)
+
+
+@warranties.route('/api/manufacturers', methods=['GET'])
+@auth.login_required(role='manufacturer')
+def api_get_manufacturers():
+    return get_manufacturers()
+
+
+@warranties.route('/api/products/models', methods=['GET'])
+@auth.login_required(role='manufacturer')
+def api_get_models():
+    return get_models()
+
+
+@warranties.route('/api/products/units', methods=['GET'])
+@auth.login_required(role=['manufacturer', 'customer'])
+def api_get_units():
+    return get_units()
+
+
+@warranties.route('/api/products/types', methods=['GET'])
+@auth.login_required(role='manufacturer')
+def api_get_product_types():
+    return get_product_types()
+
+
+@warranties.route('/api/products/models/photo/<int:model_id>', methods=['GET'])
+@auth.login_required(role='manufacturer')
+def api_get_model_photo(model_id):
+    return send_product_photo(model_id=model_id)
+
+
+@warranties.route('/api/products/units/photo/<int:unit_id>', methods=['GET'])
+@auth.login_required(role='customer')
+def api_get_unit_photo(unit_id):
+    return send_product_photo(unit_id=unit_id)
+
+
+@warranties.route('/api/products/units/qr/<int:unit_id>', methods=['GET'])
+@auth.login_required(role='manufacturer')
+def api_get_unit_qr(unit_id):
+    return send_qr_photo(unit_id)
+
+
+@warranties.route('/api/products/units/scan', methods=['POST'])
+@auth.login_required(role='customer')
+def api_add_customer_unit():
+    form = AddCustomerUnit()
+    return add_customer_unit(form)

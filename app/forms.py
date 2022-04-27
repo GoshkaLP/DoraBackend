@@ -2,8 +2,13 @@ from flask_wtf import FlaskForm
 
 from werkzeug.datastructures import FileStorage
 
-from wtforms import StringField, DateField, MultipleFileField, Field
+from wtforms import StringField, DateField, MultipleFileField, Field, FileField, IntegerField
 from wtforms.validators import InputRequired, Optional, StopValidation, ValidationError
+
+
+# Проверка валидность формы
+def is_form_valid(form):
+    return form.validate_on_submit()
 
 
 # Проверка строки на то является ли она числом или нет
@@ -77,56 +82,29 @@ class RegisterAuthEmailForm(FlaskForm):
     password = StringField('password', validators=[InputRequired()])
 
 
-class ResetPasswordForm(FlaskForm):
-    email = StringField('email', validators=[InputRequired()])
-    password = StringField('password', validators=[InputRequired()])
-    code = CustomIntegerField('code', validators=[InputRequired()])
-
-
-class LogoutForm(FlaskForm):
-    user_id = CustomIntegerField('user_id', validators=[InputRequired()])
-
-
 class ChangePasswordForm(FlaskForm):
-    user_id = CustomIntegerField('user_id', validators=[InputRequired()])
-    old_password = StringField('old_password', validators=[InputRequired()])
-    new_password = StringField('new_password', validators=[InputRequired()])
+    old_password = StringField('oldPassword', validators=[InputRequired()])
+    new_password = StringField('newPassword', validators=[InputRequired()])
 
 
-class VerifyEmailForm(FlaskForm):
-    user_id = CustomIntegerField('user_id', validators=[InputRequired()])
-    code = CustomIntegerField('code', validators=[InputRequired()])
-
-
-class WarrantyPostForm(FlaskForm):
-    user_id = CustomIntegerField('user_id', validators=[InputRequired()])
+class CreateManufacturer(FlaskForm):
     name = StringField('name', validators=[InputRequired()])
-    shop_name = StringField('shop_name', validators=[InputRequired()])
-    category_id = CustomIntegerField('category_id', validators=[InputRequired()])
-    date_of_purchase = DateField('date_of_purchase', validators=[InputRequired()])
-    type_warranty_period = StringField('type_warranty_period', validators=[InputRequired()])
-    warranty_period = CustomIntegerField('warranty_period', validators=[InputRequired()])
-    files = MultipleFileField('files', validators=[FilesRequired()])
 
 
-class WarrantyPatchForm(FlaskForm):
-    user_id = CustomIntegerField('user_id', validators=[InputRequired()])
-    warranty_id = CustomIntegerField('warranty_id', validators=[InputRequired()])
-    name = StringField('name', validators=[Optional()], default=DefaultFormValue())
-    shop_name = StringField('shop_name', validators=[Optional()], default=DefaultFormValue())
-    category_id = CustomIntegerField('category_id', validators=[Optional()], default=DefaultFormValue())
-    date_of_purchase = DateField('date_of_purchase', validators=[Optional()], default=DefaultFormValue())
-    type_warranty_period = StringField('type_warranty_period', validators=[Optional()], default=DefaultFormValue())
-    warranty_period = CustomIntegerField('warranty_period', validators=[Optional()], default=DefaultFormValue())
-    archived = CustomBooleanField('archived', validators=[Optional()], default=DefaultFormValue())
-    files_delete = ListField('files_delete', validators=[Optional()], default=DefaultFormValue())
-    files_add = MultipleFileField('files_add', validators=[FilesOptional()])
-    expertise = CustomBooleanField('expertise', validators=[Optional()], default=DefaultFormValue())
-    date_end_expertise = DateField('date_end_expertise', validators=[Optional()], default=DefaultFormValue())
-    money_returned = CustomBooleanField('money_returned', validators=[Optional()], default=DefaultFormValue())
-    item_replaced = CustomBooleanField('item_replaced', validators=[Optional()], default=DefaultFormValue())
+class CreateProductType(FlaskForm):
+    name = StringField('name', validators=[InputRequired()])
 
 
-class WarrantyDeleteForm(FlaskForm):
-    user_id = CustomIntegerField('user_id', validators=[InputRequired()])
-    warranty_id = CustomIntegerField('warranty_id', validators=[InputRequired()])
+class CreateModel(FlaskForm):
+    model_name = StringField('modelName', validators=[InputRequired()])
+    product_type_id = CustomIntegerField('productTypeId', validators=[InputRequired()])
+    photo = FileField('photo', validators=[InputRequired()])
+
+
+class CreateUnit(FlaskForm):
+    model_id = CustomIntegerField('modelId', validators=[InputRequired()])
+    serial_number = StringField('serialNumber', validators=[InputRequired()])
+
+
+class AddCustomerUnit(FlaskForm):
+    qr = StringField('qr', validators=[InputRequired()])

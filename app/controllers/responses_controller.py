@@ -58,25 +58,37 @@ def resp_wrong_password():
     return generate_resp('error', 'WRONG_PASSWORD', []), 200
 
 
-def resp_freq_password_change():
-    return generate_resp('error', 'FREQ_PASSWORD_CHANGE', []), 200
+def resp_manufacturer_exists():
+    return generate_resp('error', 'MANUFACTURER_ALREADY_EXISTS', []), 200
 
 
-def resp_no_warranty():
-    return generate_resp('error', 'NO_WARRANTY', []), 200
+def resp_manufacturer_not_exists():
+    return generate_resp('error', 'MANUFACTURER_NOT_EXISTS', []), 200
 
 
-def resp_no_warranties():
-    return generate_resp('error', 'NO_WARRANTIES', []), 200
+def resp_product_type_exists():
+    return generate_resp('error', 'PRODUCT_TYPE_ALREADY_EXISTS', 200), []
 
 
-def resp_no_file():
-    return generate_resp('error', 'NO_FILE', []), 200
+def resp_model_exists():
+    return generate_resp('error', 'MODEL_ALREADY_EXISTS', []), 200
 
 
-def resp_unable_to_save_file():
-    return generate_resp('error', 'UNABLE_TO_SAVE_FILE', []), 200
+def resp_model_not_exists():
+    return generate_resp('error', 'MODEL_NOT_EXISTS', []), 200
 
 
-def resp_unable_to_delete_file():
-    return generate_resp('error', 'UNABLE_TO_DELETE_FILE', []), 200
+def resp_unit_exists():
+    return generate_resp('error', 'UNIT_ALREADY_EXISTS', []), 200
+
+
+def resp_file_not_exists():
+    return generate_resp('error', 'FILE_NOT_EXISTS', []), 200
+
+
+def resp_wrong_qr_code():
+    return generate_resp('error', 'WRONG_QR_CODE', []), 200
+
+
+def resp_unit_assigned():
+    return generate_resp('error', 'UNIT_ALREADY_ASSIGNED', []), 200

@@ -14,3 +14,6 @@ Pillow==9.1.0
 requests==2.27.1
 psycopg2==2.9.3
 uWSGI==2.0.18
+Werkzeug==2.0.3
+SQLAlchemy==1.4.32
+qrcode==7.3.1
