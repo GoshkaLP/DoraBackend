@@ -93,6 +93,7 @@ class CreateManufacturer(FlaskForm):
 
 class CreateProductType(FlaskForm):
     name = StringField('name', validators=[InputRequired()])
+    warranty_period = CustomIntegerField('warrantyPeriod', validators=[InputRequired()])
 
 
 class CreateModel(FlaskForm):
@@ -108,3 +109,20 @@ class CreateUnit(FlaskForm):
 
 class AddCustomerUnit(FlaskForm):
     qr = StringField('qr', validators=[InputRequired()])
+
+
+class CreateServiceCenter(FlaskForm):
+    name = StringField('name', validators=[InputRequired()])
+    coordinates = ListField('coordinates', validators=[InputRequired()])
+    address = StringField('address', validators=[InputRequired()])
+
+
+class CreateWarrantyClaim(FlaskForm):
+    unit_id = CustomIntegerField('unitId', validators=[InputRequired()])
+    service_center_id = CustomIntegerField('serviceCenterId', validators=[InputRequired()])
+    problem = StringField('problem', validators=[InputRequired()])
+
+
+class ChangeWarrantyClaim(FlaskForm):
+    claim_id = CustomIntegerField('claimId', validators=[InputRequired()])
+    status = StringField('status', validators=[InputRequired()])

@@ -3,11 +3,14 @@ from flask import Blueprint
 from app.controllers.auth_controller import auth
 
 from app.forms import CreateManufacturer, CreateProductType, \
-    CreateModel, CreateUnit, AddCustomerUnit
+    CreateModel, CreateUnit, AddCustomerUnit, CreateServiceCenter, \
+    CreateWarrantyClaim, ChangeWarrantyClaim
 
 from app.controllers.warranties_controller import create_manufacturer, create_product_type, \
     create_model, create_unit, get_manufacturers, get_models, get_units, \
-    get_product_types, send_product_photo, send_qr_photo, add_customer_unit
+    get_product_types, send_product_photo, send_qr_photo, add_customer_unit, \
+    create_service_center, get_service_centers, create_warranty_claim, \
+    change_warranty_claim_status, get_warranty_claims, get_warranty_claim_status
 
 warranties = Blueprint('warranties', __name__)
 
@@ -87,3 +90,48 @@ def api_get_unit_qr(unit_id):
 def api_add_customer_unit():
     form = AddCustomerUnit()
     return add_customer_unit(form)
+
+
+@warranties.route('/api/serviceCenter/create', methods=['POST'])
+@auth.login_required(role='manufacturer')
+def api_create_service_center():
+    form = CreateServiceCenter()
+    return create_service_center(form)
+
+
+@warranties.route('/api/serviceCenter', methods=['GET'])
+@auth.login_required(role='manufacturer')
+def api_get_service_centers_manufacturer():
+    return get_service_centers()
+
+
+@warranties.route('/api/serviceCenter/<int:manufacturer_id>', methods=['GET'])
+@auth.login_required(role='customer')
+def api_get_service_centers_customer(manufacturer_id):
+    return get_service_centers(manufacturer_id)
+
+
+@warranties.route('/api/warrantyClaim/create', methods=['POST'])
+@auth.login_required(role='customer')
+def api_create_warranty_claim():
+    form = CreateWarrantyClaim()
+    return create_warranty_claim(form)
+
+
+@warranties.route('/api/warrantyClaim/status/<int:claim_id>', methods=['GET'])
+@auth.login_required(role='customer')
+def api_get_warranty_claim_status(claim_id):
+    return get_warranty_claim_status(claim_id)
+
+
+@warranties.route('/api/warrantyClaim', methods=['GET'])
+@auth.login_required(role='service')
+def api_get_warranty_claims():
+    return get_warranty_claims()
+
+
+@warranties.route('/api/warrantyClaim/status/change', methods=['POST'])
+@auth.login_required(role='service')
+def api_change_warranty_claim_status():
+    form = ChangeWarrantyClaim()
+    return change_warranty_claim_status(form)

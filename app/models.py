@@ -45,6 +45,7 @@ class Users(BaseFuncs, db.Model):
     tokens_salt = db.relationship('UsersTokensSalt', backref=db.backref('users'))
     units = db.relationship('CustomersProductUnit', backref=db.backref('users'))
     manufacturers = db.relationship('UsersManufacturers', backref=db.backref('users'))
+    service_centers = db.relationship('UsersServiceCenter', backref=db.backref('users'))
 
 
 class UsersTokensSalt(BaseFuncs, db.Model):
@@ -102,6 +103,7 @@ class ProductTypes(BaseFuncs, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     manufacturer_id = db.Column(db.Integer, db.ForeignKey('Manufacturers.id'), nullable=False)
     name = db.Column(db.String(50), nullable=False)
+    warranty_period = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
     deleted = db.Column(db.Boolean, default=False)
 
@@ -133,6 +135,7 @@ class ProductUnit(BaseFuncs, db.Model):
 
     claims = db.relationship('WarrantyClaim', backref=db.backref('product_unit'))
     customers = db.relationship('CustomersProductUnit', backref=db.backref('product_unit'))
+    warranties = db.relationship('WarrantyProductUnit', backref=db.backref('product_unit'))
 
 
 class CustomersProductUnit(BaseFuncs, db.Model):
@@ -156,6 +159,7 @@ class ServiceCenter(BaseFuncs, db.Model):
     deleted = db.Column(db.Boolean, default=False)
 
     claims = db.relationship('WarrantyClaim', backref=db.backref('service_center'))
+    users = db.relationship('UsersServiceCenter', backref=db.backref('service_center'))
 
 
 class WarrantyClaim(BaseFuncs, db.Model):
@@ -164,6 +168,24 @@ class WarrantyClaim(BaseFuncs, db.Model):
     unit_id = db.Column(db.Integer, db.ForeignKey('ProductUnit.id'), nullable=False)
     service_center_id = db.Column(db.Integer, db.ForeignKey('ServiceCenter.id'), nullable=False)
     problem = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.String(255), nullable=False)
+    status = db.Column(db.String(255), nullable=False, default='Создана')
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
+    deleted = db.Column(db.Boolean, default=False)
+
+
+class WarrantyProductUnit(BaseFuncs, db.Model):
+    __tablename__ = 'WarrantyProductUnit'
+    id = db.Column(db.Integer, primary_key=True)
+    unit_id = db.Column(db.Integer, db.ForeignKey('ProductUnit.id'), nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
+    deleted = db.Column(db.Boolean, default=False)
+
+
+class UsersServiceCenter(BaseFuncs, db.Model):
+    __tablename__ = 'UsersServiceCenter'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('Users.id'), nullable=False)
+    service_center_id = db.Column(db.Integer, db.ForeignKey('ServiceCenter.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow())
     deleted = db.Column(db.Boolean, default=False)

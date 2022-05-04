@@ -1,7 +1,9 @@
 from app.controllers.responses_controller import resp_ok, resp_form_not_valid, \
     resp_manufacturer_exists, resp_manufacturer_not_exists, resp_product_type_exists, \
     resp_model_exists, resp_model_not_exists, resp_unit_exists, resp_file_not_exists, \
-    resp_wrong_qr_code, resp_unit_assigned
+    resp_wrong_qr_code, resp_unit_assigned, resp_service_center_exists, \
+    resp_warranty_claim_exists, resp_wrong_unit_owner, resp_warranty_period_expired, \
+    resp_service_center_not_exists, resp_warranty_claim_not_exists
 
 from app.controllers.auth_controller import auth
 
@@ -10,15 +12,23 @@ from app.controllers.qr_controller import generate_qr, decode_qr
 from app.forms import is_form_valid
 
 from app.models import Manufacturers, ProductTypes, ProductModel, \
-    ProductUnit, UsersManufacturers, CustomersProductUnit
+    ProductUnit, UsersManufacturers, CustomersProductUnit, \
+    WarrantyProductUnit, ServiceCenter, WarrantyClaim, \
+    UsersServiceCenter
 
 from string import ascii_letters, digits
 
 from flask import send_file
 
+from sqlalchemy import desc
+
 import random
 
 from io import BytesIO
+
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
 
 from app.controllers.secrets import BASE_URL
 
@@ -32,6 +42,12 @@ def get_manufacturer_id():
     user_id = get_user_id()
     user = UsersManufacturers.query.filter_by(user_id=user_id).first()
     return user.manufacturer_id
+
+
+def get_service_center_id():
+    user_id = get_user_id()
+    user = UsersServiceCenter.query.filter_by(user_id=user_id).first()
+    return user.service_center_id
 
 
 def create_manufacturer(form):
@@ -52,11 +68,16 @@ def create_product_type(form):
         return resp_form_not_valid()
     manufacturer_id = get_manufacturer_id()
     type_name = form.name.data
+    warranty_period = form.warranty_period.data
     if not Manufacturers.query.filter_by(id=manufacturer_id).first():
         return resp_manufacturer_not_exists()
     if ProductTypes.query.filter_by(name=type_name, manufacturer_id=manufacturer_id).first():
         return resp_product_type_exists()
-    product_type = ProductTypes.insert(manufacturer_id=manufacturer_id, name=type_name)
+    product_type = ProductTypes.insert(
+        manufacturer_id=manufacturer_id,
+        name=type_name,
+        warranty_period=warranty_period
+    )
     resp = {
         'id': product_type.id
     }
@@ -159,14 +180,18 @@ def get_units():
             })
     elif user_role == 'customer':
         user_id = get_user_id()
-        data = ProductUnit.query.\
+        data = ProductUnit.query. \
             join(CustomersProductUnit).filter(CustomersProductUnit.user_id == user_id).all()
         for unit in data:
+            claimable = unit.warranties[0].end_date.date() > datetime.utcnow().date()
             resp.append({
                 'id': unit.id,
                 'manufacturer': unit.product_model.manufacturer.name,
+                'manufacturerId': unit.product_model.manufacturer.id,
                 'model': unit.product_model.name,
                 'serialNumber': unit.serial_number,
+                'warrantyEndDate': unit.warranties[0].end_date,
+                'claimable': claimable,
                 'photo': '{url}/api/products/units/photo/{id}'.format(
                     url=BASE_URL,
                     id=unit.id
@@ -192,7 +217,7 @@ def send_qr_photo(unit_id):
     data = ProductUnit.query \
         .join(ProductModel).filter(
             ProductModel.manufacturer_id == manufacturer_id, ProductUnit.id == unit_id
-        ).first()
+    ).first()
     if data:
         img = generate_qr(data.salt, data.id)
         img_bytes = BytesIO()
@@ -221,7 +246,7 @@ def send_product_photo(model_id=None, unit_id=None):
         data = ProductUnit.query. \
             join(CustomersProductUnit).filter(
                 CustomersProductUnit.user_id == user_id, ProductUnit.id == unit_id
-            ).first()
+        ).first()
         if not data:
             return resp_file_not_exists()
         img = data.product_model.photo
@@ -252,5 +277,118 @@ def add_customer_unit(form):
     if CustomersProductUnit.query.filter_by(user_id=user_id, unit_id=unit_id).first():
         return resp_unit_assigned()
     CustomersProductUnit.insert(user_id=user_id, unit_id=unit_id)
+    warranty_period = unit.product_model.product_type.warranty_period
+    WarrantyProductUnit.insert(
+        unit_id=unit_id,
+        end_date=datetime.utcnow() + relativedelta(months=warranty_period)
+    )
     unit.update(assigned=True)
     return resp_ok()
+
+
+def create_service_center(form):
+    if not is_form_valid(form):
+        return resp_form_not_valid()
+    manufacturer_id = get_manufacturer_id()
+    name = form.name.data
+    if ServiceCenter.query.filter_by(manufacturer_id=manufacturer_id, name=name).first():
+        return resp_service_center_exists()
+    latitude, longitude = form.coordinates.data
+    address = form.address.data
+    service = ServiceCenter.insert(
+        manufacturer_id=manufacturer_id,
+        name=name,
+        latitude=latitude,
+        longitude=longitude,
+        address=address
+    )
+    return resp_ok({
+        'id': service.id
+    })
+
+
+def get_service_centers(manufacturer_id=None):
+    if not manufacturer_id:
+        manufacturer_id = get_manufacturer_id()
+    data = ServiceCenter.query.filter_by(manufacturer_id=manufacturer_id).all()
+    resp = []
+    for service in data:
+        resp.append({
+            'id': service.id,
+            'manufacturer': service.manufacturer.name,
+            'name': service.name,
+            'address': service.address,
+            'coordinates': (service.latitude, service.longitude)
+        })
+    return resp_ok(resp)
+
+
+def create_warranty_claim(form):
+    if not is_form_valid(form):
+        return resp_form_not_valid()
+    user_id = get_user_id()
+    unit_id = form.unit_id.data
+    unit = ProductUnit.query. \
+        join(CustomersProductUnit).filter(CustomersProductUnit.user_id == user_id,
+                                          CustomersProductUnit.unit_id == unit_id).first()
+    if not unit:
+        return resp_wrong_unit_owner()
+    claimable = unit.warranties[0].end_date.date() > datetime.utcnow().date()
+    if not claimable:
+        return resp_warranty_period_expired()
+    if WarrantyClaim.query.filter(WarrantyClaim.unit_id == unit_id, WarrantyClaim.status != "Закрыта").first():
+        return resp_warranty_claim_exists()
+    service_center_id = form.service_center_id.data
+    if not ServiceCenter.query.filter_by(id=service_center_id).first():
+        return resp_service_center_not_exists()
+    problem = form.problem.data
+    claim = WarrantyClaim.insert(
+        unit_id=unit_id,
+        service_center_id=service_center_id,
+        problem=problem
+    )
+    return resp_ok({
+        'id': claim.id
+    })
+
+
+def get_warranty_claims():
+    service_center_id = get_service_center_id()
+    data = WarrantyClaim.query.filter(WarrantyClaim.service_center_id == service_center_id,
+                                      WarrantyClaim.status != 'Закрыта').all()
+    resp = []
+    for claim in data:
+        resp.append({
+            'id': claim.id,
+            'status': claim.status,
+            'unit_id': claim.unit_id,
+            'problem': claim.problem
+        })
+    return resp_ok(resp)
+
+
+def change_warranty_claim_status(form):
+    if not is_form_valid(form):
+        return resp_form_not_valid()
+    service_center_id = get_service_center_id()
+    claim_id = form.claim_id.data
+    claim = WarrantyClaim.query.filter(WarrantyClaim.id == claim_id, WarrantyClaim.status != 'Закрыта',
+                                       WarrantyClaim.service_center_id == service_center_id).first()
+    if not claim:
+        return resp_warranty_claim_not_exists()
+    status = form.status.data
+    claim.update(status=status)
+    return resp_ok()
+
+
+def get_warranty_claim_status(unit_id):
+    user_id = get_user_id()
+    claim = WarrantyClaim.query.join(ProductUnit, CustomersProductUnit). \
+        filter(ProductUnit.id == unit_id, CustomersProductUnit.user_id == user_id,
+               WarrantyClaim.status != 'Закрыта').\
+        order_by(desc(WarrantyClaim.created_at)).first()
+    if not claim:
+        return resp_warranty_claim_not_exists()
+    return resp_ok({
+        'status': claim.status
+    })

@@ -92,3 +92,27 @@ def resp_wrong_qr_code():
 
 def resp_unit_assigned():
     return generate_resp('error', 'UNIT_ALREADY_ASSIGNED', []), 200
+
+
+def resp_service_center_exists():
+    return generate_resp('error', 'SERVICE_CENTER_ALREADY_EXISTS', []), 200
+
+
+def resp_service_center_not_exists():
+    return generate_resp('error', 'SERVICE_CENTER_NOT_EXISTS', []), 200
+
+
+def resp_warranty_claim_exists():
+    return generate_resp('error', 'WARRANTY_CLAIM_ALREADY_EXISTS', []), 200
+
+
+def resp_wrong_unit_owner():
+    return generate_resp('error', 'WRONG_UNIT_OWNER', []), 200
+
+
+def resp_warranty_period_expired():
+    return generate_resp('error', 'WARRANTY_PERIOD_EXPIRED', []), 200
+
+
+def resp_warranty_claim_not_exists():
+    return generate_resp('error', 'WARRANTY_CLAIM_NOT_EXISTS', []), 200
