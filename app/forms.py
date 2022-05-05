@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 
 from werkzeug.datastructures import FileStorage
 
-from wtforms import StringField, DateField, MultipleFileField, Field, FileField, IntegerField
+from wtforms import StringField, Field, FileField, FloatField
 from wtforms.validators import InputRequired, Optional, StopValidation, ValidationError
 
 
@@ -113,7 +113,8 @@ class AddCustomerUnit(FlaskForm):
 
 class CreateServiceCenter(FlaskForm):
     name = StringField('name', validators=[InputRequired()])
-    coordinates = ListField('coordinates', validators=[InputRequired()])
+    latitude = FloatField('latitude', validators=[InputRequired()])
+    longitude = FloatField('longitude', validators=[InputRequired()])
     address = StringField('address', validators=[InputRequired()])
 
 

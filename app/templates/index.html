@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dora</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+<body>
+    <script src="{{ url_for('static', filename='jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='my.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+
+    <nav class="navbar navbar-dark bg-dark sticky-top">
+      <div class="container-fluid">
+        <a class="navbar-brand">Админка Dora</a>
+      </div>
+    </nav>
+
+    <select class="form-select user">
+      <option selected>Выберите пользователя</option>
+      <option value="1">Производитель ASUS</option>
+      <option value="2">Производитель ACER</option>
+      <option value="3">Сервисный центр ASUS</option>
+    </select>
+    <br>
+    <br>
+    <div class="container-md" id="manufacturer" style = "display:none">
+        <div id="create_model_type">
+            <h3>Создать тип модели</h3>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="type_name" placeholder="Название типа">
+                <input type="text" class="form-control" id="warranty_period" placeholder="Период гарантии (в месяцах)">
+                <button type="button" class="btn btn-primary create_model_type">Создать</button>
+            </div>
+        </div>
+        <br>
+        <div id="create_model">
+            <h3>Создать модель</h3>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="model_name" placeholder="Название модели">
+            </div>
+            <div class="input-group mb-3">
+              <button class="btn btn-outline-secondary dropdown-toggle select_model_type" type="button" data-bs-toggle="dropdown" aria-expanded="false">Типы моделей</button>
+              <ul class="dropdown-menu" id="drop_model_type">
+              </ul>
+                <span class="input-group-text" id="drop_model_type_text"></span>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Фото модели</span>
+              <input type="file" class="form-control" id="model_file">
+            </div>
+            <button type="button" class="btn btn-primary create_model">Создать</button>
+        </div>
+        <br>
+        <br>
+
+        <div id="create_unit">
+            <h3>Создать единицу техники</h3>
+            <div class="input-group mb-3">
+              <button class="btn btn-outline-secondary dropdown-toggle select_model" type="button" data-bs-toggle="dropdown" aria-expanded="false">Модели</button>
+              <ul class="dropdown-menu" id="drop_model">
+              </ul>
+                <span class="input-group-text" id="drop_model_text"></span>
+            </div>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="serial_number" placeholder="Серийный номер">
+            </div>
+            <button type="button" class="btn btn-primary create_unit">Создать</button>
+        </div>
+        <br>
+        <br>
+
+        <div id="create_service_center">
+            <h3>Создать сервисный центр</h3>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="service_center_name" placeholder="Название сервисного центра">
+            </div>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="service_latitude" placeholder="Широта">
+                <input type="text" class="form-control" id="service_longitude" placeholder="Долгота">
+            </div>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="service_address" placeholder="Адрес">
+            </div>
+            <button type="button" class="btn btn-primary create_service_center">Создать</button>
+        </div>
+        <br>
+        <br>
+
+        <div id="units_list">
+            <h3>Созданные единицы техники</h3>
+                <div class="row row-cols-1 row-cols-md-3 g-4" id="units">
+
+                </div>
+        </div>
+        <br>
+        <br>
+
+        <div id="service_centers_list">
+            <h3>Созданные сервисные центры</h3>
+                <div class="row row-cols-1 row-cols-md-3 g-4" id="service_centers">
+
+                </div>
+        </div>
+    </div>
+
+
+
+     <div class="container-md" id="service" style = "display:none">
+        <div id="warranty_claims_list">
+            <h3>Текущие заявки на гарантийное обслуживание</h3>
+            <div class="row row-cols-1 row-cols-md-3 g-4" id="warranty_claims">
+
+                </div>
+        </div>
+
+         <div class="modal fade" id="claim_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Редактирование статуса заявки</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <input type="text" class="form-control" id="new_claim_status" placeholder="Новый статус">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary change_claim">Сохранить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+     </div>
+
+
+</body>
+</html>

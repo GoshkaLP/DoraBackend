@@ -4,6 +4,7 @@ from flask import Flask
 from app.views.node import node
 from app.views.users import users
 from app.views.warranties import warranties
+from app.views.admin import admin
 
 from app.models import db
 
@@ -21,5 +22,6 @@ def create_app(app_config=None):
     app.register_blueprint(node)
     app.register_blueprint(users)
     app.register_blueprint(warranties)
+    app.register_blueprint(admin)
 
     return app

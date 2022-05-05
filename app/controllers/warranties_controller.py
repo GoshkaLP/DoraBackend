@@ -293,7 +293,8 @@ def create_service_center(form):
     name = form.name.data
     if ServiceCenter.query.filter_by(manufacturer_id=manufacturer_id, name=name).first():
         return resp_service_center_exists()
-    latitude, longitude = form.coordinates.data
+    latitude = form.latitude.data
+    longitude = form.longitude.data
     address = form.address.data
     service = ServiceCenter.insert(
         manufacturer_id=manufacturer_id,
@@ -358,10 +359,16 @@ def get_warranty_claims():
                                       WarrantyClaim.status != 'Закрыта').all()
     resp = []
     for claim in data:
+        claim_name = '{manufacturer} {model}'.format(
+            manufacturer=claim.product_unit.product_model.manufacturer.name,
+            model=claim.product_unit.product_model.name
+        )
         resp.append({
             'id': claim.id,
+            'name': claim_name,
+            'serialNumber': claim.product_unit.serial_number,
             'status': claim.status,
-            'unit_id': claim.unit_id,
+            'unitId': claim.unit_id,
             'problem': claim.problem
         })
     return resp_ok(resp)

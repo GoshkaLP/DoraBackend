@@ -10,7 +10,7 @@ import base64
 
 
 def generate_qr(salt, unit_id):
-    logo_path = path.join(getcwd(), 'static', 'dora.png')
+    logo_path = path.join(getcwd(), 'app', 'static', 'dora.png')
     # logo_path = 'C:\\Users\\rybki\\stuff\\DoraBackend\\static\\dora.png'
     logo = Image.open(logo_path)
     data = {
