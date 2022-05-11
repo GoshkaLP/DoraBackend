@@ -237,7 +237,7 @@ def send_qr_photo(unit_id):
     data = ProductUnit.query \
         .join(ProductModel).filter(
             ProductModel.manufacturer_id == manufacturer_id, ProductUnit.id == unit_id
-    ).first()
+        ).first()
     if data:
         img = generate_qr(data.salt, data.id)
         img_bytes = BytesIO()
@@ -306,6 +306,7 @@ def add_customer_unit(form):
     resp = {
         'id': unit.id,
         'manufacturer': unit.product_model.manufacturer.name,
+        'manufacturerId': unit.product_model.manufacturer.id,
         'model': unit.product_model.name,
         'modelType': unit.product_model.product_type.name
     }

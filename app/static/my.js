@@ -326,13 +326,14 @@ $(document).ready(function () {
                          service_centers.forEach(service_center => {
                              let card_title = service_center.name;
                              let address = service_center.address;
-                             let coordinates = service_center.coordinates.join(', ');
+                             let latitude = service_center.latitude;
+                             let longitude = service_center.longitude;
                              $('#service_centers').append(`
                                 <div class="col">
                                     <div class="card h-100">
                                       <div class="card-body">
                                         <h5 class="card-title">${card_title}</h5>
-                                        <p class="card-text">Адрес: ${address}<br> Координаты: ${coordinates}</p>
+                                        <p class="card-text">Адрес: ${address}<br> Координаты: ${latitude}, ${longitude}</p>
                                       </div>
                                     </div>
                                   </div>
