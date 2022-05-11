@@ -1,8 +1,8 @@
 $(document).ready(function () {
-    let admin_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6OCwiZW1haWwiOiJhZG1pbkB5YW5kZXgucnUiLCJzYWx0IjoiclJiRm51SyJ9.Uh6DxheYOQRCVkoB2CbWmmln-JDXWy12MeR2N_fAcSY'
-    let acer_manufacturer_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NCwiZW1haWwiOiJhY2VyQHlhbmRleC5ydSIsInNhbHQiOiJjRTdWczgzIn0.k54eMtVxtACzaeqEr67kpspf1aNwhbyJF-wjzLWHo5w';
-    let asus_manufacturer_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MywiZW1haWwiOiJyeWJraW4uZ2Vvcmd5QHlhbmRleC5ydSIsInNhbHQiOiJtTHdFVkZxIn0.SJofJ17u0BhPjLdanGjmyqaVmKjfk7FkskBMtwsyqHs';
-    let asus_service_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NywiZW1haWwiOiJhc3Vzc2VydmljZUB5YW5kZXgucnUiLCJzYWx0IjoiWWx0T2k2dSJ9.72AgVvj6_W6el0M4LKml1D6HFywhiaMCK8ij8Pu_0wE';
+    let admin_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwiZW1haWwiOiJhZG1pbkB5YW5kZXgucnUiLCJzYWx0IjoiOGd0dDFFQSJ9.vuQDlnMKA5mKC_2qJMIiTMq4_MrQZGJtOd4ZucaWglU';
+    let acer_manufacturer_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MywiZW1haWwiOiJhY2VyQHlhbmRleC5ydSIsInNhbHQiOiJNamJhMHB1In0.N8MW2gktFS2sX9egjbXUjj06kOPDIHUQQFwkCkLIwSo';
+    let asus_manufacturer_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NCwiZW1haWwiOiJhc3VzQHlhbmRleC5ydSIsInNhbHQiOiJEM3ZzbGlpIn0.Ke6t2nBlYxNhLGhLYKO6xKaZEkQPNpb8inj93lXyO9E';
+    let asus_service_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NSwiZW1haWwiOiJhc3Vzc2VydmljZUB5YW5kZXgucnUiLCJzYWx0IjoiYzcycmpkTCJ9.ibxqvnbFqJsFdKpbrsru_JLiNt_Z5t_bG7_-rdClYS0';
     let current_token = '';
     let user_type = 0;
 
