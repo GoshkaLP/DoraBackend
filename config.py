@@ -1,8 +1,8 @@
 from os import getenv, name
 
 # Для отладки
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 port = 5434
 if name == 'posix':
