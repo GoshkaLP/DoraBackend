@@ -26,22 +26,6 @@ def resp_wrong_email_format():
     return generate_resp('error', 'WRONG_EMAIL_FORMAT', []), 200
 
 
-def resp_wrong_code():
-    return generate_resp('error', 'WRONG_CODE', []), 200
-
-
-def resp_code_expires():
-    return generate_resp('error', 'CODE_EXPIRES', []), 200
-
-
-def resp_account_not_verified():
-    return generate_resp('error', 'ACCOUNT_NOT_VERIFIED', []), 200
-
-
-def resp_account_verified():
-    return generate_resp('error', 'ACCOUNT_ALREADY_VERIFIED', []), 200
-
-
 def resp_account_not_exists():
     return generate_resp('error', 'ACCOUNT_NOT_EXISTS', []), 200
 
@@ -80,6 +64,10 @@ def resp_model_not_exists():
 
 def resp_unit_exists():
     return generate_resp('error', 'UNIT_ALREADY_EXISTS', []), 200
+
+
+def resp_unit_not_exists():
+    return generate_resp('error', 'UNIT_NOT_EXISTS', []), 200
 
 
 def resp_file_not_exists():

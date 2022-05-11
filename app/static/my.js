@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    let admin_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6OCwiZW1haWwiOiJhZG1pbkB5YW5kZXgucnUiLCJzYWx0IjoiclJiRm51SyJ9.Uh6DxheYOQRCVkoB2CbWmmln-JDXWy12MeR2N_fAcSY'
     let acer_manufacturer_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NCwiZW1haWwiOiJhY2VyQHlhbmRleC5ydSIsInNhbHQiOiJjRTdWczgzIn0.k54eMtVxtACzaeqEr67kpspf1aNwhbyJF-wjzLWHo5w';
     let asus_manufacturer_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MywiZW1haWwiOiJyeWJraW4uZ2Vvcmd5QHlhbmRleC5ydSIsInNhbHQiOiJtTHdFVkZxIn0.SJofJ17u0BhPjLdanGjmyqaVmKjfk7FkskBMtwsyqHs';
     let asus_service_token = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6NywiZW1haWwiOiJhc3Vzc2VydmljZUB5YW5kZXgucnUiLCJzYWx0IjoiWWx0T2k2dSJ9.72AgVvj6_W6el0M4LKml1D6HFywhiaMCK8ij8Pu_0wE';
@@ -23,21 +24,81 @@ $(document).ready(function () {
     }
 
     $('.user').change(function () {
+        document.getElementById('admin').style.display = 'none';
         document.getElementById('manufacturer').style.display = 'none';
         document.getElementById('service').style.display = 'none';
         let selector_val = $(this).val();
         if (selector_val === '1') {
+            current_token = admin_token;
+            user_type = 1;
+        } else if (selector_val === '2') {
             current_token = asus_manufacturer_token;
             user_type = 2;
-        } else if (selector_val === '2') {
+        } else if (selector_val === '3') {
             current_token = acer_manufacturer_token;
             user_type = 2;
-        } else if (selector_val === '3') {
+        } else if (selector_val === '4') {
             current_token = asus_service_token;
             user_type = 3;
         }
 
-        if (user_type === 2) {
+        if (user_type === 1) {
+            document.getElementById('admin').style.display = 'block';
+            $('#manufacturers').empty();
+
+            // СОЗДАНИЕ ПРОИЗВОДИТЕЛЯ
+            $('.create_manufacturer').click(function () {
+               let send_data = new FormData();
+                 send_data.append('name', $('#manufacturer_name').val());
+
+                 let req = $.ajax({
+                     url: '/api/manufacturers/create',
+                     type: 'POST',
+                     data: send_data,
+                     enctype: 'multipart/form-data',
+                     processData: false,
+                     contentType: false,
+                     beforeSend: function (xhr) {
+                         xhr.setRequestHeader('Authorization', current_token);
+                     }
+                });
+                 req.done(function (data) {
+                     if (data.status === 'ok') {
+                         alert('Производитель был создан!');
+                     } else {
+                         alert('Произошла ошибка!');
+                     }
+                 })
+            });
+
+
+            // ВЫВОД СОЗДАННЫХ ПРОИЗВОДИТЕЛЕЙ
+            let req = $.ajax({
+                     url: '/api/manufacturers',
+                     type: 'GET',
+                     beforeSend: function (xhr) {
+                         xhr.setRequestHeader('Authorization', current_token);
+                     }
+                });
+                 req.done(function (data) {
+                     if (data.status === 'ok') {
+                         let manufacturers = data.data;
+                         manufacturers.forEach(manufacturer => {
+                             let card_title = manufacturer.name;
+                             $('#manufacturers').append(`
+                                <div class="col">
+                                    <div class="card h-100">
+                                      <div class="card-body">
+                                        <h5 class="card-title">${card_title}</h5>
+                                      </div>
+                                    </div>
+                                  </div>
+                            `)
+                         })
+                     }
+                 })
+
+        } else if (user_type === 2) {
             document.getElementById('manufacturer').style.display = 'block';
             $('#units').empty();
             $('#service_centers').empty();
@@ -314,7 +375,7 @@ $(document).ready(function () {
                                     Статус: ${status}
                                     </p>
                                     <button type="button" class="btn btn-primary open_modal" data-bs-toggle="modal" data-bs-target="#claim_modal" id=${claim.id}>
-                                      Изменить стату
+                                      Изменить статус
                                     </button>
                                   </div>
                                 </div>

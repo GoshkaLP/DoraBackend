@@ -3,7 +3,7 @@ from app.controllers.responses_controller import resp_ok, resp_form_not_valid, \
     resp_model_exists, resp_model_not_exists, resp_unit_exists, resp_file_not_exists, \
     resp_wrong_qr_code, resp_unit_assigned, resp_service_center_exists, \
     resp_warranty_claim_exists, resp_wrong_unit_owner, resp_warranty_period_expired, \
-    resp_service_center_not_exists, resp_warranty_claim_not_exists
+    resp_service_center_not_exists, resp_warranty_claim_not_exists, resp_unit_not_exists
 
 from app.controllers.auth_controller import auth
 
@@ -181,22 +181,42 @@ def get_units():
     elif user_role == 'customer':
         user_id = get_user_id()
         data = ProductUnit.query. \
-            join(CustomersProductUnit).filter(CustomersProductUnit.user_id == user_id).all()
+            join(CustomersProductUnit).filter(CustomersProductUnit.user_id == user_id).\
+            order_by(desc(CustomersProductUnit.created_at)).all()
         for unit in data:
-            claimable = unit.warranties[0].end_date.date() > datetime.utcnow().date()
             resp.append({
                 'id': unit.id,
                 'manufacturer': unit.product_model.manufacturer.name,
                 'manufacturerId': unit.product_model.manufacturer.id,
                 'model': unit.product_model.name,
-                'serialNumber': unit.serial_number,
-                'warrantyEndDate': unit.warranties[0].end_date,
-                'claimable': claimable,
-                'photo': '{url}/api/products/units/photo/{id}'.format(
-                    url=BASE_URL,
-                    id=unit.id
-                )
+                'modelType': unit.product_model.product_type.name
             })
+    return resp_ok(resp)
+
+
+def get_unit(unit_id):
+    user_id = get_user_id()
+    unit = ProductUnit.query. \
+        join(CustomersProductUnit).filter(CustomersProductUnit.user_id == user_id,
+                                          ProductUnit.id == unit_id).first()
+
+    if not unit:
+        return resp_unit_not_exists()
+    claimable = unit.warranties[0].end_date.date() > datetime.utcnow().date()
+    resp = {
+        'id': unit.id,
+        'manufacturer': unit.product_model.manufacturer.name,
+        'manufacturerId': unit.product_model.manufacturer.id,
+        'model': unit.product_model.name,
+        'modelType': unit.product_model.product_type.name,
+        'serialNumber': unit.serial_number,
+        'warrantyEndDate': unit.warranties[0].end_date.strftime('%m.%d.%Y'),
+        'claimable': claimable,
+        'photo': '{url}/api/products/units/photo/{id}'.format(
+            url=BASE_URL,
+            id=unit.id
+        )
+    }
     return resp_ok(resp)
 
 
@@ -271,7 +291,7 @@ def add_customer_unit(form):
     salt = decoded_data['salt']
     unit = ProductUnit.query.filter_by(id=unit_id, salt=salt).first()
     if not unit:
-        return resp_wrong_qr_code()
+        return resp_unit_not_exists()
     if unit.assigned:
         return resp_unit_assigned()
     if CustomersProductUnit.query.filter_by(user_id=user_id, unit_id=unit_id).first():
@@ -283,7 +303,13 @@ def add_customer_unit(form):
         end_date=datetime.utcnow() + relativedelta(months=warranty_period)
     )
     unit.update(assigned=True)
-    return resp_ok()
+    resp = {
+        'id': unit.id,
+        'manufacturer': unit.product_model.manufacturer.name,
+        'model': unit.product_model.name,
+        'modelType': unit.product_model.product_type.name
+    }
+    return resp_ok(resp)
 
 
 def create_service_center(form):
@@ -319,7 +345,8 @@ def get_service_centers(manufacturer_id=None):
             'manufacturer': service.manufacturer.name,
             'name': service.name,
             'address': service.address,
-            'coordinates': (service.latitude, service.longitude)
+            'latitude': service.latitude,
+            'longitude': service.longitude
         })
     return resp_ok(resp)
 

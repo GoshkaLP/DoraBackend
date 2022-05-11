@@ -1,10 +1,10 @@
-FROM python:3.8.3-alpine3.11
+FROM python:3.8.6-buster
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/msk_app
 
-COPY ./ ./
+ADD ./requirements.txt ./
+RUN pip install -r ./requirements.txt
 
-RUN apk add python3-dev build-base linux-headers pcre-dev musl-dev postgresql-dev jpeg-dev zlib-dev \
-    && pip install -r requirements.txt
+COPY . /usr/src/msk_app/
 
 CMD ["uwsgi", "app.ini"]

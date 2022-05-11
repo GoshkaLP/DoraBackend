@@ -19,12 +19,34 @@
 
     <select class="form-select user">
       <option selected>Выберите пользователя</option>
-      <option value="1">Производитель ASUS</option>
-      <option value="2">Производитель ACER</option>
-      <option value="3">Сервисный центр ASUS</option>
+        <option value="1">Админ</option>
+      <option value="2">Производитель ASUS</option>
+      <option value="3">Производитель ACER</option>
+      <option value="4">Сервисный центр ASUS</option>
     </select>
     <br>
     <br>
+
+    <div class="container-md" id="admin" style = "display:none">
+        <div id="create_manufacturer">
+            <h3>Создать производителя</h3>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="manufacturer_name" placeholder="Название производителя">
+                <button type="button" class="btn btn-primary create_manufacturer">Создать</button>
+            </div>
+        </div>
+
+        <div id="manufacturers_list">
+            <h3>Созданные производители</h3>
+                <div class="row row-cols-1 row-cols-md-3 g-4" id="manufacturers">
+
+                </div>
+        </div>
+    </div>
+    <br>
+    <br>
+
+
     <div class="container-md" id="manufacturer" style = "display:none">
         <div id="create_model_type">
             <h3>Создать тип модели</h3>

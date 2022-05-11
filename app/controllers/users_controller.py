@@ -61,7 +61,7 @@ def get_user_id():
 
 
 # Проверка почты на доступность для регистрации
-def api_users_email_availability_check(email):
+def users_email_availability_check(email):
     if not check_email(email):
         return resp_wrong_email_format()
     if Users.query.filter_by(email=email).first():
@@ -70,7 +70,7 @@ def api_users_email_availability_check(email):
 
 
 # Регистрация через почту
-def api_users_register_email(form):
+def users_register_email(form):
     if not is_form_valid(form):
         return resp_form_not_valid()
     email = form.email.data.lower()
@@ -90,7 +90,7 @@ def api_users_register_email(form):
 
 
 # Авторизация через почту
-def api_users_auth_email(form):
+def users_auth_email(form):
     if not is_form_valid(form):
         return resp_form_not_valid()
     email = form.email.data.lower()
@@ -110,14 +110,14 @@ def api_users_auth_email(form):
 
 
 # Метод выхода из аккаунта
-def api_users_logout():
+def users_logout():
     user_id = get_user_id()
     UsersTokensSalt.query.filter_by(salt=auth.current_user()['salt'], user_id=user_id).first().delete()
     return resp_ok()
 
 
 # Смена пароля
-def api_users_change_password(form):
+def users_change_password(form):
     if not is_form_valid(form):
         return resp_form_not_valid()
     user_id = get_user_id()
@@ -137,3 +137,10 @@ def api_users_change_password(form):
         'token': generate_token(user_id, user_email)
     }
     return resp_ok(resp)
+
+
+def check_token():
+    user_id = get_user_id()
+    return resp_ok({
+        'id': user_id
+    })

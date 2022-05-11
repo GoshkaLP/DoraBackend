@@ -10,13 +10,14 @@ from app.controllers.warranties_controller import create_manufacturer, create_pr
     create_model, create_unit, get_manufacturers, get_models, get_units, \
     get_product_types, send_product_photo, send_qr_photo, add_customer_unit, \
     create_service_center, get_service_centers, create_warranty_claim, \
-    change_warranty_claim_status, get_warranty_claims, get_warranty_claim_status
+    change_warranty_claim_status, get_warranty_claims, get_warranty_claim_status, \
+    get_unit
 
 warranties = Blueprint('warranties', __name__)
 
 
 @warranties.route('/api/manufacturers/create', methods=['POST'])
-@auth.login_required(role='manufacturer')
+@auth.login_required(role='admin')
 def api_create_manufacturer():
     form = CreateManufacturer()
     return create_manufacturer(form)
@@ -44,7 +45,7 @@ def api_create_product_unit():
 
 
 @warranties.route('/api/manufacturers', methods=['GET'])
-@auth.login_required(role='manufacturer')
+@auth.login_required(role='admin')
 def api_get_manufacturers():
     return get_manufacturers()
 
@@ -59,6 +60,12 @@ def api_get_models():
 @auth.login_required(role=['manufacturer', 'customer'])
 def api_get_units():
     return get_units()
+
+
+@warranties.route('/api/products/units/<int:unit_id>', methods=['GET'])
+@auth.login_required(role='customer')
+def api_get_unit(unit_id):
+    return get_unit(unit_id)
 
 
 @warranties.route('/api/products/types', methods=['GET'])
@@ -118,10 +125,10 @@ def api_create_warranty_claim():
     return create_warranty_claim(form)
 
 
-@warranties.route('/api/warrantyClaim/status/<int:claim_id>', methods=['GET'])
+@warranties.route('/api/warrantyClaim/status/<int:unit_id>', methods=['GET'])
 @auth.login_required(role='customer')
-def api_get_warranty_claim_status(claim_id):
-    return get_warranty_claim_status(claim_id)
+def api_get_warranty_claim_status(unit_id):
+    return get_warranty_claim_status(unit_id)
 
 
 @warranties.route('/api/warrantyClaim', methods=['GET'])
