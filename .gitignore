@@ -132,3 +132,6 @@ dmypy.json
 # custom files
 .idea/
 /data/*
+
+http-client.private.env.json
+./http-client.private.env.json

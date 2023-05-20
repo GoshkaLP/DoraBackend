@@ -1,0 +1,25 @@
+### Версия сервера
+GET {{HOST}}/api/version
+
+### Авторизация
+POST {{HOST}}/api/users/auth/email
+Content-Type: application/json
+
+{
+    "email": "{{EMAIL}}",
+    "password": "{{PASSWORD}}"
+}
+
+### Получение списка товаров у покупателя
+GET {{HOST}}/api/products/units
+Authorization: Bearer {{TOKEN}}
+
+
+### Получение информации о продукте покупателя
+GET {{HOST}}/api/products/units/4
+Authorization: Bearer {{TOKEN}}
+
+
+### Получение информации о сервисных центрах производителя
+GET {{HOST}}/api/serviceCenter/1
+Authorization: Bearer {{TOKEN}}
